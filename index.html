@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เครื่องคิดเลข</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="calculator">
+        <input type="text" id="display" disabled>
+        <div class="button-delete">
+            <button class="delete-btn" onclick="deleteLastChar()" class="disabled">←</button>
+        </div>
+        <div class="button-row">
+            <button class="C-btn" onclick="clearDisplay()">C</button>
+            <button onclick="appendToDisplay('(')">(</button>
+            <button onclick="appendToDisplay(')')">)</button>
+            <button onclick="appendToDisplay('/')">/</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button onclick="appendToDisplay('*')">x</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button onclick="appendToDisplay('-')">-</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button onclick="appendToDisplay('+')">+</button>
+        </div>
+
+        <div class="button-row">
+            <button onclick="appendToDisplay('.')">.</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('%')">%</button>
+            <button onclick="calculateResult()">=</button>
+        </div>
+        <div id="history">
+            <div class="history-header">
+                <h3>ประวัติการคำนวณ</h3>
+                <button class="clear-history-btn" onclick="clearHistory()">เคลียร์ประวัติ</button>
+            </div>
+            <ul id="history-list"></ul>
+        </div>
+        
+    </div>
+    <script>
+        let history = [];
+        function appendToDisplay(value) {
+            const display = document.getElementById('display');
+            display.value += value;
+            updateDeleteButton();
+        }
+
+        function clearDisplay() {
+            const display = document.getElementById('display');
+            display.value = '';
+            updateDeleteButton();
+        }
+
+        function deleteLastChar() {
+            const display = document.getElementById('display');
+            display.value = display.value.slice(0, -1);
+            updateDeleteButton();
+        }
+        function calculateResult() {
+            const display = document.getElementById('display');
+            try {
+                let expression = display.value;
+
+                // ตรวจสอบว่ามีเครื่องหมาย % อยู่ในสมการ
+                if (expression.includes('%')) {
+                    expression = expression.replace(/(\d+)%/g, (match, number) => {
+                        return number / 100; // แปลงเปอร์เซ็นต์เป็นทศนิยม
+                    });
+                }
+
+                let result = eval(expression); // ใช้ eval คำนวณสมการ
+
+                display.value = result;
+            } catch (error) {
+                display.value = 'Error';
+            }
+            updateDeleteButton();
+        }
+        function appendToDisplay(value) {
+            const display = document.getElementById('display');
+
+            // ถ้าข้อความใน display คือ "Error" หรือ "undefined" ให้เคลียร์ข้อความก่อน
+            if (display.value === 'Error' || display.value === 'undefined') {
+                display.value = '';
+            }
+            const operators = ['+', '-', '*', '/'];
+            const lastChar = display.value.slice(-1);
+
+            if (operators.includes(lastChar) && operators.includes(value)) {
+                return; // ไม่เพิ่มเครื่องหมายซ้ำ
+            }
+
+            display.value += value;
+            updateDeleteButton();
+        }
+        function updateDeleteButton() {
+            const display = document.getElementById('display');
+            const deleteButton = document.getElementById('delete-btn');
+            if (display.value.length === 0) {
+                deleteButton.classList.add('disabled');
+            } else {
+                deleteButton.classList.remove('disabled');
+            }
+        }
+        function calculateResult() {
+            const display = document.getElementById('display');
+            try {
+                let result = eval(display.value);
+                if (display.value.includes('%')) {
+                    const percentValue = parseFloat(display.value.replace('%', '')) / 100;
+                    result = result * percentValue;
+                }
+                // เก็บประวัติการคำนวณ
+                history.push(`${display.value} = ${result}`);
+                display.value = result;
+                updateHistory(); // อัปเดตประวัติ
+            } catch (error) {
+                display.value = 'Error';
+            }
+            updateDeleteButton();
+        }
+
+        function updateDeleteButton() {
+            const display = document.getElementById('display');
+            const deleteButton = document.getElementById('delete-btn');
+            if (display.value.length === 0) {
+                deleteButton.classList.add('disabled');
+            } else {
+                deleteButton.classList.remove('disabled');
+            }
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = ''; // ล้างประวัติเดิม
+
+            // แสดงประวัติใหม่
+            history.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = entry;
+                historyList.appendChild(listItem);
+            });
+        }
+        function clearHistory() {
+            const historyListElement = document.getElementById('history-list');
+            historyListElement.innerHTML = ''; // ลบรายการประวัติทั้งหมด
+            historyList = []; // รีเซ็ตประวัติใน array
+        }
+    </script>
+</body>
+
+</html>
